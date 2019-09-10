@@ -1,0 +1,115 @@
+#!/bin/bash
+
+dims(){
+		row=$(wc -l < $1)
+		num=$(wc -w < $1)
+		col=`expr $num / $row`		#col number = total number of numbers / number of row
+		echo "$row $col"
+}
+
+transpose(){
+	
+		row=$(wc -l < $1)
+		num=$(wc -w < $1)
+		col=`expr $num / $row`
+		i=1
+		while [ $i -le $col ]
+		do
+		cut -f $i $1 | paste -s		#cut the ith part of number and paste it as a line
+		i=$(($i + 1))
+		done
+}
+
+mean(){
+		row=$(wc -l < $1)
+		num=$(wc -w < $1)
+		col=`expr $num / $row`
+		i=1
+		while [ $i -le $col ]
+		do
+			templine=$(cut -f $i $1) 
+			sum=0
+			j=1
+			for j in $templine
+						#get sum of each col
+			do
+				sum=$(($sum + $j))
+			done
+						#get mean of this col
+			tempmean=$(($sum*2/$row))
+			mean=$(($tempmean-$sum/$row))	#for the decimal	
+						#print the mean of this line
+			if (($i < $col ))
+			then
+				echo -ne "$mean\t"
+			else
+				echo "$mean"
+			fi
+			i=$(($i + 1))
+			
+		done
+}
+
+add(){
+							#get col and rows number
+	row1=$(wc -l < $1)
+        num1=$(wc -w < $1)
+        col1=`expr $num1 / $row1`
+        row2=$(wc -l < $2)
+        num2=$(wc -w < $2)
+        col2=`expr $num2 / $row2`
+ 
+        if [ $row2 = $row1 ] && [ $col1 = $col2 ]	#check same kind of matrix
+        then
+		i=1
+		while [ $i -le $row1 ]
+		do
+			j=1
+			while [ $j -le $col1 ]
+			do
+				x1=$(cut -f $j $1 | head -n $i | tail -n 1)
+				x2=$(cut -f $j $2 | head -n $i | tail -n 1)
+				x=$(($x1+$x2))		#add the number in same position
+				if [ $j -lt $col1 ]
+				then
+					echo -ne "$x\t"
+				else
+					echo "$x"
+				fi
+				j=$(($j + 1))
+			done
+			i=$(($i + 1))
+		done
+	else
+		echo "error">&2				#error handle
+		exit 1
+	fi
+}
+
+	if [ $# -eq 2 ] && [ -r $arg ]
+	then
+		if [ "$1" = "dims" ]
+		then
+			dims $2	
+		
+		elif [ "$1" = "transpose" ]
+		then
+			transpose $2
+		elif [ "$1" = "mean" ]
+		then
+			mean $2
+		else
+			echo "Error argument">&2
+			exit 1
+		fi
+
+	elif [ "$1" = "add" ] && [ -r $arg ] && [ $# -eq 3 ]
+	then
+		add $2 $3
+	elif [ "$1" = "multiply" ] && [ $# -eq 3 ]
+	then
+		echo "nothing"
+	else 
+		echo "Error argument" >&2
+		exit 1
+	fi

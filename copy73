@@ -1,0 +1,87 @@
+#!/bin/bash
+
+dims(){
+	#[ $# -ne 3 ] && echo "number of argument !=3" >&2
+		row=$(wc -l < $1)
+		num=$(wc -w < $1)
+		col=`expr $num / $row`
+		echo "$row $col"
+}
+
+transpose(){
+	
+		row=$(wc -l < $1)
+		num=$(wc -w < $1)
+		col=`expr $num / $row`
+	#echo "col = $col"
+		i=1
+		while [ $i -le $col ]
+		do
+		cut -f $i $1 | paste -s
+		i=$(($i + 1))
+		done
+}
+
+mean(){
+	#echo "number = $#"
+		row=$(wc -l < $1)
+		num=$(wc -w < $1)
+		col=`expr $num / $row`
+	#echo "col = $col"
+		i=1
+		while [ $i -le $col ]
+		do
+			templine=$(cut -f $i $1) 
+			sum=0
+			j=1
+			for j in $templine
+			#get sum of each col
+			do
+				sum=$(($sum + $j))
+			done
+			#get mean of this col
+			tempmean=$(($sum*2/$row))
+			mean=$(($tempmean-$sum/$row))	
+			#print the mean of this line
+			if (($i < $col ))
+			then
+				echo -ne "$mean\t"
+			else
+				echo "$mean"
+			fi
+			i=$(($i + 1))
+			
+		done
+}
+
+add(){
+	
+	echo "$1"
+	echo "$2"
+
+}
+
+	
+	if [ $# -eq 2 ] && [ -r $arg ]
+	then
+		if [ "$1" = "dims" ]
+		then
+			dims $2	
+		
+		elif [ "$1" = "transpose" ]
+		then
+			transpose $2
+		elif [ "$1" = "mean" ]
+		then
+			mean $2
+		elif [ "$1" = "add" ]
+		then
+			add $2 $3
+		else
+			echo "Error argument">&2
+			exit 1
+		fi
+	else 
+		echo "Error argument" >&2
+		exit 1
+	fi
